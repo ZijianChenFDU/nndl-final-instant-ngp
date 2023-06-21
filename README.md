@@ -91,6 +91,14 @@ instant-ngp maxiangbo
 
 这里仅展示一个demo，为子彬院前的苏步青像。其他结果请见[报告](./report.md)。
 
+#### 原始视频(节选)
+
+
+
+https://github.com/ZijianChenFDU/nndl-final-instant-ngp/assets/109083746/24773a37-28a6-43f8-ab94-615c55d5bce4
+
+
+
 #### 分割的图片
 
 ![苏步青像图片分割结果](./demo/subuqing/subuqing_images.png)
