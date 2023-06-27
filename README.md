@@ -2,7 +2,7 @@
 
 **陈子健 22110980002**
 
-这是我们小组期末作业的第三部分。本部分使用[FFmpeg](https://github.com/FFmpeg/FFmpeg)+[COLMAP](https://github.com/colmap/colmap)+[Instant-NGP](https://github.com/NVlabs/instant-ngp)对复旦校园中的部分雕塑进行了3D建模。我们期末作业的另外两个部分分别见[第一题]()和[第二题]()。本部分的报告中有视频需要展示，请直接点击连接中的[markdown文件](./report.md)。
+这是我们小组期末作业的第三部分。本部分使用[FFmpeg](https://github.com/FFmpeg/FFmpeg)+[COLMAP](https://github.com/colmap/colmap)+[Instant-NGP](https://github.com/NVlabs/instant-ngp)对复旦校园中的部分雕塑进行了3D建模。我们期末作业的另外两个部分分别见[第一题](https://github.com/AltonXiang/finalterm_task1)和[第二题]()。本部分的报告中有视频需要展示，请直接点击连接中的[markdown文件](./report.md)。
 
 注意：本repo下只有用于demo的图片和视频，请不要clone本repo，复现结果请下载网盘中的压缩包。
 
