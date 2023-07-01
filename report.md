@@ -32,8 +32,7 @@ By representing the scene as a continuous 5D radiance field in a neural network,
 
 The neural network structure of NeRF is not complex. the MLP $\mathbf{F}_\theta$ first processes the input 3D coordinate $\mathbf{x}$ with 8 fully-connected layers (using ReLU activations and 256 channels per layer), and outputs $\sigma$ and a 256-dimensional feature vector. This feature vector is then concatenated with the camera ray’s viewing direction and passed to one additional fully-connected layer (using a ReLU activation and 128 channels) that output the view-dependent RGB color.
 
-In the original NeRF paper, $\mathbf{F}_{\theta} =\mathbf{F}_{\theta}' \circ \gamma$ is a composite function consisting of the MLP  $\mathbf{F}_\theta'$ and a positional encoding 
-
+In the original NeRF paper, $\mathbf{F}_\theta = \mathbf{F}_{\theta}' circ \gamma$ is a composite function consisting of the MLP  $\mathbf{F}_\theta'$ and a positional encoding 
 $$
 \gamma(p)=\left(\sin \left(2^0 \pi p\right), \cos \left(2^0 \pi p\right), \cdots, \sin \left(2^{L-1} \pi p\right), \cos \left(2^{L-1} \pi p\right)\right).
 $$
@@ -52,6 +51,7 @@ where $\delta_i=t_{i+1}-t_i$ is the distance between adjacent samples. The whole
 <img src="demo\report_images\nerf_pipeline.png"></img>
 <p>Figure 2 The Whole Pipeline of NeRF</p>
 </center>
+
 
 ### Main Contributions of Instant-NGP
 
