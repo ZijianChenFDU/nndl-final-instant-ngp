@@ -87,7 +87,7 @@ Instant-NGP does not explicitly handle collisions of the hash functions. Instead
 
 ### Multiresolution Hash Encoding
 
-Given an MLP $m(\mathbf{y} ; \Phi)$, we are interested in an encoding of its inputs $\mathbf{y}=\operatorname{enc}(\mathbf{x} ; \theta)$. Our neural network not only has trainable weight parameters $\Phi$, but also trainable encoding parameters $\theta$. These are arranged into $L$ levels, each containing up to $T$ feature vectors with dimensionality $F$. Typical values for these hyperparameters are shown in Table 1. Figure 3 illustrates the steps performed in our multiresolution hash encoding. Each level (two of which are shown as red and blue in the figure) is independent and conceptually stores feature vectors at the vertices of a grid, the resolution of which is chosen to be a geometric progression between the coarsest and finest resolutions $\left[N_{\min }, N_{\max }\right]$ :
+Given an MLP $m(\mathbf{y} ; \Phi)$, we are interested in an encoding of its inputs $\mathbf{y}=\mathrm{enc}(\mathbf{x} ; \theta)$. Our neural network not only has trainable weight parameters $\Phi$, but also trainable encoding parameters $\theta$. These are arranged into $L$ levels, each containing up to $T$ feature vectors with dimensionality $F$. Typical values for these hyperparameters are shown in Table 1. Figure 3 illustrates the steps performed in our multiresolution hash encoding. Each level (two of which are shown as red and blue in the figure) is independent and conceptually stores feature vectors at the vertices of a grid, the resolution of which is chosen to be a geometric progression between the coarsest and finest resolutions $\left[N_{\min }, N_{\max }\right]$ :
 $$
 \begin{aligned}
 N_l & :=\left\lfloor N_{\min } \cdot b^l\right\rfloor, \\
@@ -134,7 +134,7 @@ The authors argues that the presence of hash collisions will not influence the q
 
 ### The Network Architecture of Instant-NGP
 
- For this part, we only focus on the NeRF application of Instant-NGP. Similar to the vanilla NeRF model, the Instant-NGP NeRF model consists of two concatenated MLPs: a density MLP followed by a color MLP. The density MLP maps the hash encoded position $\mathbf{y}=\operatorname{enc}(\mathbf{x} ; \theta)$ to 16 output values, the first of which we treat as log-space density. The color MLP adds view-dependent color variation. Its input is the concatenation of
+ For this part, we only focus on the NeRF application of Instant-NGP. Similar to the vanilla NeRF model, the Instant-NGP NeRF model consists of two concatenated MLPs: a density MLP followed by a color MLP. The density MLP maps the hash encoded position $\mathbf{y}=\mathrm{enc}(\mathbf{x} ; \theta)$ to 16 output values, the first of which we treat as log-space density. The color MLP adds view-dependent color variation. Its input is the concatenation of
 - the 16 output values of the density MLP, and
 - the view direction projected onto the first 16 coefficients of the spherical harmonics basis (i.e. up to degree 4). This is a natural frequency encoding over unit vectors.
 
