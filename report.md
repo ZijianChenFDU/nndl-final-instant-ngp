@@ -141,7 +141,7 @@ The authors argues that the presence of hash collisions will not influence the q
 Its output is an RGB color triplet, for which we use either a sigmoid activation when the training data has low dynamic-range (sRGB) or an exponential activation when it has high dynamic range (linear HDR). For either case, the results were generated with a 1-hidden-layer density MLP and a 2-hidden-layer color MLP, both 64 neurons wide, which is far less complicated than the vanilla NeRF MLP. The Instant-NGP NeRF pipeline is depicted in Figure 4.
 
 <center>
-<img src="mat_screen_images\ngp_pipeline.png"></img>
+<img src="demo\report_images\ngp_pipeline.png"></img>
 <p>Figure 4 The Pipeline of Instant-NGP NeRF</p>
 </center>
 
