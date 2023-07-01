@@ -255,7 +255,7 @@ This section shows the results of the four statues (Figure 6 to Figure 9). The o
 </center>
 
 <center>
-<img src="mat_screen_images\sijiao_video.png"></img>
+<img src="demo\report_images\sijiao_video.png"></img>
 <p>Figure 8 Constructed 3D Model of “The Books and the Clock”</p>
 </center>
 
