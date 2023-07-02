@@ -1,5 +1,10 @@
 # 3D Generation using Instant-NGP
 
+
+<style>table{
+  margin:auto;
+}</style>
+
 ## Github repository
 
 - Instant-NGP (source): [https://github.com/NVlabs/instant-ngp](https://github.com/NVlabs/instant-ngp) 
@@ -24,15 +29,22 @@ NeRF employs the classical volume rendering technique. Volume rendering is a met
 
 By representing the scene as a continuous 5D radiance field in a neural network, NeRF can generate scene images from input camera poses. As in Figure 1, based on the given position $\mathbf{x} = (x, y, z)$ and viewing direction $(\theta, \varphi)$ of a point, the neural network $\mathbf{F}_\theta$ outputs the emissive color $\mathbf{c}=(r,g,b)$ in that direction and the voxel density $\sigma$ of the point. Then, the volume rendering equation is used to render the color of the pixels, and the network is trained by calculating the error between the rendered color and the ground truth color.
 
+<br>
 
-<center>
-<img src="demo\report_images\nerf.png"></img>
-<p>Figure 1 The Structure of NeRF</p>
+<div align=center><img src="report_images/nerf.png" width=800></img></div>
+
+<br>
+
+<center>Figure 1 The Structure of NeRF
 </center>
+
+<br>
+
 
 The neural network structure of NeRF is not complex. the MLP $\mathbf{F}_\theta$ first processes the input 3D coordinate $\mathbf{x}$ with 8 fully-connected layers (using ReLU activations and 256 channels per layer), and outputs $\sigma$ and a 256-dimensional feature vector. This feature vector is then concatenated with the camera ray’s viewing direction and passed to one additional fully-connected layer (using a ReLU activation and 128 channels) that output the view-dependent RGB color.
 
-In the original NeRF paper, $\mathbf{F}_\theta = \mathbf{F}_{\theta}' circ \gamma$ is a composite function consisting of the MLP  $\mathbf{F}_\theta'$ and a positional encoding 
+In the original NeRF paper, $\mathbf{F}_\theta=\mathbf{F}_\theta' \circ \gamma$ is a composite function consisting of the MLP  $\mathbf{F}_\theta'$ and a positional encoding 
+
 $$
 \gamma(p)=\left(\sin \left(2^0 \pi p\right), \cos \left(2^0 \pi p\right), \cdots, \sin \left(2^{L-1} \pi p\right), \cos \left(2^{L-1} \pi p\right)\right).
 $$
@@ -47,11 +59,16 @@ $$
 
 where $\delta_i=t_{i+1}-t_i$ is the distance between adjacent samples. The whole pipline of NeRF is demonstrated in Figure 2.
 
-<center>
-<img src="demo\report_images\nerf_pipeline.png"></img>
-<p>Figure 2 The Whole Pipeline of NeRF</p>
+<br>
+
+<div align=center><img src="report_images/nerf_pipeline.png" width=800></img></div>
+
+<br>
+
+<center>Figure 2 The Whole Pipeline of NeRF
 </center>
 
+<br>
 
 ### Main Contributions of Instant-NGP
 
@@ -87,7 +104,7 @@ Instant-NGP does not explicitly handle collisions of the hash functions. Instead
 
 ### Multiresolution Hash Encoding
 
-Given an MLP $m(\mathbf{y} ; \Phi)$, we are interested in an encoding of its inputs $\mathbf{y}=\mathrm{enc}(\mathbf{x} ; \theta)$. Our neural network not only has trainable weight parameters $\Phi$, but also trainable encoding parameters $\theta$. These are arranged into $L$ levels, each containing up to $T$ feature vectors with dimensionality $F$. Typical values for these hyperparameters are shown in Table 1. Figure 3 illustrates the steps performed in our multiresolution hash encoding. Each level (two of which are shown as red and blue in the figure) is independent and conceptually stores feature vectors at the vertices of a grid, the resolution of which is chosen to be a geometric progression between the coarsest and finest resolutions $\left[N_{\min }, N_{\max }\right]$ :
+Given an MLP $m(\mathbf{y} ; \Phi)$, we are interested in an encoding of its inputs $\mathbf{y}=\operatorname{enc}(\mathbf{x} ; \theta)$. Our neural network not only has trainable weight parameters $\Phi$, but also trainable encoding parameters $\theta$. These are arranged into $L$ levels, each containing up to $T$ feature vectors with dimensionality $F$. Typical values for these hyperparameters are shown in Table 1. Figure 3 illustrates the steps performed in our multiresolution hash encoding. Each level (two of which are shown as red and blue in the figure) is independent and conceptually stores feature vectors at the vertices of a grid, the resolution of which is chosen to be a geometric progression between the coarsest and finest resolutions $\left[N_{\min }, N_{\max }\right]$ :
 $$
 \begin{aligned}
 N_l & :=\left\lfloor N_{\min } \cdot b^l\right\rfloor, \\
@@ -97,7 +114,8 @@ $$
 $N_{\max }$ is chosen to match the finest detail in the training data. Due to the large number of levels $L$, the growth factor is usually small. Our use cases have $b \in[1.26,2]$.
 
 
-Table 1 Hash encoding parameters and their ranges
+<center>Table 1 Hash encoding parameters and their ranges</center>
+
 | Parameter | Symbol | Value |
 | :--- | :--- | ---: |
 | Number of levels | $L$ | $16$ |
@@ -106,10 +124,7 @@ Table 1 Hash encoding parameters and their ranges
 | Coarsest resolution | $N_{\min}$ | $16$ |
 | Finest resolution | $N_{\max}$ | $512$ to $524288$ |
 
-Consider a single level $l$. The input coordinate $\mathbf{x} \in \mathbb{R}^d$ is scaled by that level's grid resolution before rounding down and up $\left\lfloor\mathbf{x}_l\right\rfloor:=$ $\left\lfloor\mathbf{x} \cdot N_l\right\rfloor,\left\lceil\mathbf{x}_l\right\rceil:=\left\lceil\mathbf{x} \cdot N_l\right\rceil$.
-
-
-$\left\lfloor\mathbf{x}_l\right\rfloor$ and $\left\lceil\mathbf{x}_l\right\rceil$ span a voxel with $2^d$ integer vertices in $\mathbb{Z}^d$. We map each corner to an entry in the level's respective feature vector array, which has fixed size of at most $T$. For coarse levels where a dense grid requires fewer than $T$ parameters, i.e. $\left(N_l+1\right)^d \leq T$, this mapping is $1: 1$. At finer levels, we use a hash function $h: \mathbb{Z}^d \rightarrow \mathbb{Z}_T$ to index into the array, effectively treating it as a hash table, although there is no explicit collision handling. We rely instead on the gradient-based optimization to store appropriate sparse detail in the array, and the subsequent neural network $m(\mathbf{y} ; \Phi)$ for collision resolution. The number of trainable encoding parameters $\theta$ is therefore $O(T)$ and bounded by $T \cdot L \cdot F$ which in our case is always $T \cdot 16 \cdot 2$ (Table 1). We use a spatial hash function of the form
+Consider a single level $l$. The input coordinate $\mathbf{x} \in \mathbb{R}^d$ is scaled by that level's grid resolution before rounding down and up $\left\lfloor\mathbf{x}_l\right\rfloor:=$ $\left\lfloor\mathbf{x} \cdot N_l\right\rfloor,\left\lceil\mathbf{x}_l\right\rceil:=\left\lceil\mathbf{x} \cdot N_l\right\rceil$. $\left\lfloor\mathbf{x}_l\right\rfloor$ and $\left\lceil\mathbf{x}_l\right\rceil$ span a voxel with $2^d$ integer vertices in $\mathbb{Z}^d$. We map each corner to an entry in the level's respective feature vector array, which has fixed size of at most $T$. For coarse levels where a dense grid requires fewer than $T$ parameters, i.e. $\left(N_l+1\right)^d \leq T$, this mapping is $1: 1$. At finer levels, we use a hash function $h: \mathbb{Z}^d \rightarrow \mathbb{Z}_T$ to index into the array, effectively treating it as a hash table, although there is no explicit collision handling. We rely instead on the gradient-based optimization to store appropriate sparse detail in the array, and the subsequent neural network $m(\mathbf{y} ; \Phi)$ for collision resolution. The number of trainable encoding parameters $\theta$ is therefore $O(T)$ and bounded by $T \cdot L \cdot F$ which in our case is always $T \cdot 16 \cdot 2$ (Table 1). We use a spatial hash function of the form
 $$
 h(\mathbf{x})=\left(\bigoplus_{i=1}^d x_i \pi_i\right) \bmod T,
 $$
@@ -121,12 +136,18 @@ Lastly, the feature vectors at each corner are $d$-linearly interpolated accordi
 Recall that this process takes place independently for each of the $L$ levels. The interpolated feature vectors of each level, as well as auxiliary inputs $\xi \in \mathbb{R}^E$ (such as the encoded view direction and textures in neural radiance caching), are concatenated to produce $\mathbf{y} \in \mathbb{R}^{L F+E}$, which is the encoded input enc $(\mathbf{x} ; \theta)$ to the MLP $m(\mathbf{y} ; \Phi)$.
 
 
-Figure 3 illustrates of the multiresolution hash encoding in 2D. (1) for a given input coordinate $\mathbf{x}$, we find the surrounding voxels at $L$ resolution levels and assign indices to their corners by hashing their integer coordinates. (2) for all resulting corner indices, we look up the corresponding $F$-dimensional feature vectors from the hash tables $\theta_l$ and (3) linearly interpolate them according to the relative position of $\mathbf{x}$ within the respective $l$-th voxel. (4) we concatenate the result of each level, as well as auxiliary inputs $\xi \in \mathbb{R}^E$, producing the encoded MLP input $y \in \mathbb{R}^{L F+E}$, which (5) is evaluated last. To train the encoding, loss gradients are backpropagated through the MLP (5), the concatenation (4), the linear interpolation (3), and then accumulated in the looked-up feature vectors.
+Figure 3 illustrates the multiresolution hash encoding in 2D. (1) for a given input coordinate $\mathbf{x}$, we find the surrounding voxels at $L$ resolution levels and assign indices to their corners by hashing their integer coordinates. (2) for all resulting corner indices, we look up the corresponding $F$-dimensional feature vectors from the hash tables $\theta_l$ and (3) linearly interpolate them according to the relative position of $\mathbf{x}$ within the respective $l$-th voxel. (4) we concatenate the result of each level, as well as auxiliary inputs $\xi \in \mathbb{R}^E$, producing the encoded MLP input $y \in \mathbb{R}^{L F+E}$, which (5) is evaluated last. To train the encoding, loss gradients are backpropagated through the MLP (5), the concatenation (4), the linear interpolation (3), and then accumulated in the looked-up feature vectors.
 
-<center>
-<img src="demo\report_images\hashing.png"></img>
-<p>Figure 3 Illustration of the multiresolution hash encoding in 2D</p>
+<br>
+
+<div align=center><img src="report_images/hashing.png" width=600></img></div>
+
+<br>
+
+<center>Figure 3 Illustration of the multiresolution hash encoding in 2D
 </center>
+
+<br>
 
 
 The authors argues that the presence of hash collisions will not influence the quality of reconstructed scenes with a series of reasons. In practice, when training samples collide in this way, their gradients average. More details on hash collisions are discussed in the original paper.
@@ -134,31 +155,42 @@ The authors argues that the presence of hash collisions will not influence the q
 
 ### The Network Architecture of Instant-NGP
 
- For this part, we only focus on the NeRF application of Instant-NGP. Similar to the vanilla NeRF model, the Instant-NGP NeRF model consists of two concatenated MLPs: a density MLP followed by a color MLP. The density MLP maps the hash encoded position $\mathbf{y}=\mathrm{enc}(\mathbf{x} ; \theta)$ to 16 output values, the first of which we treat as log-space density. The color MLP adds view-dependent color variation. Its input is the concatenation of
+ For this part, we only focus on the NeRF application of Instant-NGP. Similar to the vanilla NeRF model, the Instant-NGP NeRF model consists of two concatenated MLPs: a density MLP followed by a color MLP. The density MLP maps the hash encoded position $\mathbf{y}=\operatorname{enc}(\mathbf{x} ; \theta)$ to 16 output values, the first of which we treat as log-space density. The color MLP adds view-dependent color variation. Its input is the concatenation of
 - the 16 output values of the density MLP, and
 - the view direction projected onto the first 16 coefficients of the spherical harmonics basis (i.e. up to degree 4). This is a natural frequency encoding over unit vectors.
 
 Its output is an RGB color triplet, for which we use either a sigmoid activation when the training data has low dynamic-range (sRGB) or an exponential activation when it has high dynamic range (linear HDR). For either case, the results were generated with a 1-hidden-layer density MLP and a 2-hidden-layer color MLP, both 64 neurons wide, which is far less complicated than the vanilla NeRF MLP. The Instant-NGP NeRF pipeline is depicted in Figure 4.
 
-<center>
-<img src="demo\report_images\ngp_pipeline.png"></img>
-<p>Figure 4 The Pipeline of Instant-NGP NeRF</p>
+<br>
+
+<div align=center><img src="report_images/ngp_pipeline.png" width=800></img></div>
+
+<br>
+
+<center>Figure 4 The Pipeline of Instant-NGP NeRF
 </center>
 
+<br>
 
 
 ## Experiment Procedure
 
-This section utilizes FFmpeg+COLMAP+Instant-NGP to create 3D models of selected statues in the campus of Fudan University. A detailed introduction of the implementation of the experiments in Chinese is presented on [the GitHub repository](https://github.com/ZijianChenFDU/nndl-final-instant-ngp).
+This section utilizes [FFmpeg](https://github.com/FFmpeg/FFmpeg)+[COLMAP](https://github.com/colmap/colmap)+[Instant-NGP](https://github.com/NVlabs/instant-ngp) to create 3D models of selected statues in the campus of Fudan University. A detailed introduction of the implementation of the experiments in Chinese is presented on our [GitHub repository](https://github.com/ZijianChenFDU/nndl-final-instant-ngp).
 
 ### The Dataset
 
 Our experiment is based on a unique data set on the statues in Fudan University, including the statue of Su Buqing(苏步青), the statue of Chen Wangdao(陈望道), the “The Books and the Clock” in front of the 4th Teaching Building, and the “The poet pondering while seated on a donkey”(驴背诗思) on the corner of Guanghua Building. The original video was captured using a smartphone. Extracted frames are shown in Figure 5.
 
-<center>
-<img src="demo\report_images\original.png"></img>
-<p>Figure 5 Extracted frames from the videos of the statues</p>
+<br>
+
+<div align=center><img src="report_images/original.png" width=800></img></div>
+
+<br>
+
+<center>Figure 5 Extracted frames from the videos of the statues
 </center>
+
+<br>
 
 ### The Environment
 
@@ -243,26 +275,43 @@ instant-ngp maxiangbo
 This section shows the results of the four statues (Figure 6 to Figure 9). The original results of Instant-NGP is a volume dataset. Users can generate MP4 videos of given view points within the Instant-NGP program. The results generated by Instant-NGP show the entire scene captured by the camera. In the program interface, you can set the spatial coordinate range to display only the objects of interest on the screen. The following figures show the extracted frames of the output videos.
 
 
+<br>
 
-<center>
-<img src="demo\report_images\subuqing_video.png"></img>
-<p>Figure 6 Constructed 3D Model of the Statue of Buqing Su</p>
+<div align=center><img src="report_images/subuqing_video.png" width=600></img></div>
+
+<br>
+
+<center>Figure 6 Constructed 3D Model of the Statue of Buqing Su
 </center>
 
-<center>
-<img src="demo\report_images\chenwangdao_video.png"></img>
-<p>Figure 7 Constructed 3D Model of the Statue of Wangdao Chen</p>
+<br>
+
+<div align=center><img src="report_images/chenwangdao_video.png" width=600></img></div>
+
+<br>
+
+<center>Figure 7 Constructed 3D Model of the Statue of Wangdao Chen
 </center>
 
-<center>
-<img src="demo\report_images\sijiao_video.png"></img>
-<p>Figure 8 Constructed 3D Model of “The Books and the Clock”</p>
+<br>
+
+<div align=center><img src="report_images/sijiao_video.png" width=600></img></div>
+
+<br>
+
+<center>Figure 8 Constructed 3D Model of “The Books and the Clock”
 </center>
 
-<center>
-<img src="demo\report_images\lvbeishisi_video.png"></img>
-<p>Figure 9 Constructed 3D Model of “The poet pondering while seated on a donkey”</p>
+<br>
+
+<div align=center><img src="report_images/lvbeishisi_video.png" width=600></img></div>
+
+<br>
+
+<center>Figure 9 Constructed 3D Model of “The poet pondering while seated on a donkey”
 </center>
+
+<br>
 
 ## Discussions
 
@@ -272,20 +321,32 @@ In this section, the strong and weak points of the rendering quality of Instant-
 
 Instant-NGP exhibits a very fast convergence speed, taking only around 30 seconds to generate a recognizable 3D scene. Generally, the quality of the rendering no longer improves after rendering for approximately 2-3 minutes. The display results below are all scenes obtained from the final rendering. Figure 10 exhibits the rendering process of a scene from initialization to convergence.
 
-<center>
-<img src="demo\report_images\rendering.png"></img>
-<p>Figure 10 The Rendering Process of “The Books and the Clock”</p>
+
+<br>
+
+<div align=center><img src="report_images/rendering.png" width=800></img></div>
+
+<br>
+
+<center>Figure 10 The Rendering Process of “The Books and the Clock”
 </center>
+
+<br>
 
 ### High-quality portrayal of details
 
 The results generated by Instant-NGP have a very high quality. Figure 11 showcases the details of the flowers and Chinese characters in the generated scene. Both are portrayed very close to reality.
 
+<br>
 
-<center>
-<img src="demo\report_images\details.png"></img>
-<p>Figure 11 The Details of the Flowers (a) and Chinese Characters (b) Rendered in the 3D Scene</p>
+<div align=center><img src="report_images/details.png" width=500></img></div>
+
+<br>
+
+<center>Figure 11 The Details of the Flowers (a) and Chinese Characters (b) Rendered in the 3D Scene
 </center>
+
+<br>
 
 ### Distortions in out-of-sample viewing directions
 
@@ -294,21 +355,40 @@ When observing a scene from an out-of-sample view, there may be some distortions
 
 As depicted in Figure 12, when flipping the object vertically, it is noticed that the rendering quality of both the object and the background is excellent from the frontal view perspective (the second line). However, in the bird's-eye (the last two lines) and worm's-eye views (the first line), the background becomes very blurry, and the quality of the central object's rendering also significantly decreases.
 
-<center>
-<img src="demo\report_images\vertical.png"></img>
-<p>Figure 12 Comparison of the Rendering Quality of Different Viewing Directions</p>
+<br>
+
+<div align=center><img src="report_images/vertical.png" width=600></img></div>
+
+<br>
+
+<center>Figure 12 Comparison of the Rendering Quality of Different Viewing Directions
 </center>
+
+<br>
 
 ### Shortcomings in Background Rendering
 
 Compared to the near-perfect portrayal of the object of interest in terms of details, Instant-NGP has many flaws in rendering the background. Sometimes, it generates inexplicable "clouds" in mid-air (Figure 13). Additionally, the quality of the background can undergo significant changes with a change in perspective. When zooming in, it becomes apparent that Instant-NGP actually treats the background as colorful clouds floating in mid-air. Only under specific distances and angles do these "clouds" come together to form a background scene that approaches the actual situation.
 
-<center>
-<img src="demo\report_images\clouds.png"></img>
-<p>Figure 13 "Clouds" in Mid-air around the Object</p>
+<br>
+
+<div align=center><img src="report_images/clouds.png" width=500></img></div>
+
+<br>
+
+<center>Figure 13 "Clouds" in Mid-air around the Object
 </center>
 
-<center>
-<img src="demo\report_images\background.png"></img>
-<p>Figure 14 The Background is Treated as Colorful Clouds Floating in Mid-air</p>
+<br>
+
+<div align=center><img src="report_images/background.png" width=500></img></div>
+
+<br>
+
+<center>Figure 14 The Background is Treated as Colorful Clouds Floating in Mid-air
 </center>
+
+<br>
+<br>
+
+
